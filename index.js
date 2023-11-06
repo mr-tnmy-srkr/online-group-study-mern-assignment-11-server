@@ -39,6 +39,27 @@ const logger = (req, res, next) => {
   console.log("log-info", req.method, req.url);
   next();
 };
+//verify token and grant access
+const gateman = (req, res, next) => {
+  const token = req?.cookies?.token;
+  // or
+  // const { token } = req.cookies
+  // console.log(token);
+
+  //if client does not send token
+  if (!token) {
+    return res.status(401).send({ message: "You are not authorized" });
+  }
+  // verify a token symmetric
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(401).send({ message: "You are not authorized" });
+    }
+    // attach decoded user so that others can get it
+    req.user = decoded;
+    next();
+  });
+};
 
 async function run() {
   try {
