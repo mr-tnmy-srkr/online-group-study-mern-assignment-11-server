@@ -84,6 +84,12 @@ async function run() {
       .send({ success: true });
   });
 
+  app.post("/api/v1/auth/user/logout", async (req, res) => {
+    const user = req.body;
+    console.log("logging out", user);
+    res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+  });
+
     app.get("/api/v1/assignments", async (req, res) => {
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
