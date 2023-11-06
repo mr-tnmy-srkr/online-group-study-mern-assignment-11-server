@@ -38,6 +38,24 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
+   //jwt access token
+   app.post("/api/v1/auth/access-token", async (req, res) => {
+    // creating token and send to client
+    const user = req.body;
+    console.log(user);
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: 60 * 60,
+    });
+    //  console.log(token);
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+      })
+      .send({ success: true });
+  });
+
     app.get("/api/v1/assignments", async (req, res) => {
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
