@@ -17,6 +17,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+
 //mongodb connection string
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@groupstudycluster.bgrpf96.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -33,13 +34,19 @@ const assignmentCollection = client
   .db("assignmentDB")
   .collection("assignments");
 
+//middleware
+const logger = (req, res, next) => {
+  console.log("log-info", req.method, req.url);
+  next();
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
    //jwt access token
-   app.post("/api/v1/auth/access-token", async (req, res) => {
+   app.post("/api/v1/auth/access-token",logger, async (req, res) => {
     // creating token and send to client
     const user = req.body;
     console.log(user);
