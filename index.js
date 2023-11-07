@@ -17,7 +17,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-
 //mongodb connection string
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@groupstudycluster.bgrpf96.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -48,12 +47,12 @@ const gateman = (req, res, next) => {
 
   //if client does not send token
   if (!token) {
-    return res.status(401).send({ message: "You are not authorized" });
+    return res.status(401).send({ message: "You are not authorized1" });
   }
   // verify a token symmetric
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      return res.status(401).send({ message: "You are not authorized" });
+      return res.status(401).send({ message: "You are not authorized2" });
     }
     // attach decoded user so that others can get it
     req.user = decoded;
@@ -78,33 +77,31 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await assignmentCollection.findOne(query);
       res.send(result);
-    })
-
-   //jwt access token
-   app.post("/api/v1/auth/access-token",logger, async (req, res) => {
-    // creating token and send to client
-    const user = req.body;
-    console.log(user);
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: 60 * 60,
     });
-    //  console.log(token);
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-      })
-      .send({ success: true });
-  });
 
-  app.post("/api/v1/auth/user/logout", async (req, res) => {
-    const user = req.body;
-    console.log("logging out", user);
-    res.clearCookie("token", { maxAge: 0 }).send({ success: true });
-  });
+    //jwt access token
+    app.post("/api/v1/auth/access-token", logger, async (req, res) => {
+      // creating token and send to client
+      const user = req.body;
+      console.log(user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: 60 * 60,
+      });
+      //  console.log(token);
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "none",
+        })
+        .send({ success: true });
+    });
 
- 
+    app.post("/api/v1/auth/user/logout", async (req, res) => {
+      const user = req.body;
+      console.log("logging out", user);
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+    });
 
     app.post("/api/v1/user/create-assignment", async (req, res) => {
       const data = req.body;
@@ -112,6 +109,48 @@ async function run() {
       const result = await assignmentCollection.insertOne(data);
       res.send(result);
     });
+
+    //update a single product
+    app.put(
+      "/api/v1/assignments/update-assignment/:assignmentId",
+      async (req, res) => {
+        const id = req.params.assignmentId;
+        const data = req.body;
+        console.log("id:", id, "Data:", data);
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateProduct = {
+          $set: {
+            title: data.title,
+            thumbnail: data.thumbnail,
+            marks: data.marks,
+            date: data.date,
+            difficultyLevel: data.difficultyLevel,
+            description: data.description,
+          },
+        };
+        const result = await assignmentCollection.updateOne(
+          filter,
+          updateProduct,
+          options
+        );
+        res.send(result);
+      }
+    );
+
+//delete a assignment by creator
+app.delete("/api/v1/user/delete-assignment/:assignmentId",gateman, async (req, res) => {
+const tokenEmail = req.user.email
+ const id = req.params.assignmentId;
+  const query = {
+    $and: [
+      { _id: new ObjectId(id) },
+      { user: tokenEmail }
+    ]
+  };
+  const result = await assignmentCollection.deleteOne(query);
+  res.send(result); 
+});
 
     // Send a ping to confirm a successful connection
     client.db("admin").command({ ping: 1 });
