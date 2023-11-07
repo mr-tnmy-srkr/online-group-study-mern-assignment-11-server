@@ -68,6 +68,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
+    //get all assignments
     app.get("/api/v1/assignments", async (req, res) => {
       const cursor = assignmentCollection.find();
       const result = await cursor.toArray();
@@ -79,6 +80,13 @@ async function run() {
       const id = req.params.assignmentId;
       const query = { _id: new ObjectId(id) };
       const result = await assignmentCollection.findOne(query);
+      res.send(result);
+    });
+    //get all submitted-assignment
+    app.get("/api/v1/submitted-assignments", async (req, res) => {
+      const query = {status:"pending"};
+      const cursor = submittedAssignmentCollection.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
