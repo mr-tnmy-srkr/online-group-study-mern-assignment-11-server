@@ -32,6 +32,9 @@ const client = new MongoClient(uri, {
 const assignmentCollection = client
   .db("assignmentDB")
   .collection("assignments");
+const submittedAssignmentCollection = client
+  .db("assignmentDB")
+  .collection("submittedAssignments");
 
 //middleware
 const logger = (req, res, next) => {
@@ -109,6 +112,12 @@ async function run() {
       const result = await assignmentCollection.insertOne(data);
       res.send(result);
     });
+    app.post("/api/v1/user/submit-assignment", async (req, res) => {
+      const data = req.body;
+      // console.log(data);
+      const result = await submittedAssignmentCollection.insertOne(data);
+      res.send(result);
+    });
 
     //update a single product
     app.put(
@@ -138,19 +147,20 @@ async function run() {
       }
     );
 
-//delete a assignment by creator
-app.delete("/api/v1/user/delete-assignment/:assignmentId",gateman, async (req, res) => {
-const tokenEmail = req.user.email
- const id = req.params.assignmentId;
-  const query = {
-    $and: [
-      { _id: new ObjectId(id) },
-      { user: tokenEmail }
-    ]
-  };
-  const result = await assignmentCollection.deleteOne(query);
-  res.send(result); 
-});
+    //delete a assignment by creator
+    app.delete(
+      "/api/v1/user/delete-assignment/:assignmentId",
+      gateman,
+      async (req, res) => {
+        const tokenEmail = req.user.email;
+        const id = req.params.assignmentId;
+        const query = {
+          $and: [{ _id: new ObjectId(id) }, { user: tokenEmail }],
+        };
+        const result = await assignmentCollection.deleteOne(query);
+        res.send(result);
+      }
+    );
 
     // Send a ping to confirm a successful connection
     client.db("admin").command({ ping: 1 });
