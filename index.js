@@ -66,6 +66,20 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
 
+    app.get("/api/v1/assignments", async (req, res) => {
+      const cursor = assignmentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //get particular assignment by id
+    app.get("/api/v1/assignments/:assignmentId", async (req, res) => {
+      const id = req.params.assignmentId;
+      const query = { _id: new ObjectId(id) };
+      const result = await assignmentCollection.findOne(query);
+      res.send(result);
+    })
+
    //jwt access token
    app.post("/api/v1/auth/access-token",logger, async (req, res) => {
     // creating token and send to client
@@ -90,11 +104,7 @@ async function run() {
     res.clearCookie("token", { maxAge: 0 }).send({ success: true });
   });
 
-    app.get("/api/v1/assignments", async (req, res) => {
-      const cursor = assignmentCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
+ 
 
     app.post("/api/v1/user/create-assignment", async (req, res) => {
       const data = req.body;
