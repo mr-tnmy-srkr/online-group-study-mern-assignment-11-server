@@ -70,9 +70,17 @@ async function run() {
 
     //get all assignments
     app.get("/api/v1/assignments", async (req, res) => {
-      const cursor = assignmentCollection.find();
+
+      //pagination
+      const page = Number(req.query.page);
+      const limit = Number(req.query.limit);
+      const skip = (page - 1) * limit;
+
+      const cursor = assignmentCollection.find().skip(skip).limit(limit);
       const result = await cursor.toArray();
-      res.send(result);
+       // count all data
+       const total = await assignmentCollection.countDocuments();
+       res.send({total, result});
     });
 
     //get particular assignment by id
