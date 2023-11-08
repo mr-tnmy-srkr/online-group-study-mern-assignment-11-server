@@ -162,11 +162,35 @@ async function run() {
           filter,
           updateProduct,
           options
+          );
+          res.send(result);
+        }
         );
-        res.send(result);
-      }
-    );
-
+        //update data after giving marks
+        app.put(
+          "/api/v1/assignments/marking-assignment/:assignmentId",
+          async (req, res) => {
+            const id = req.params.assignmentId;
+            const data = req.body;
+            console.log("id:", id, "Data:", data);
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateProduct = {
+              $set: {
+                myMark: data.myMark,
+                feedback: data.feedback,
+                status:"success"
+              },
+            };
+            const result = await submittedAssignmentCollection.updateOne(
+              filter,
+              updateProduct,
+              options
+              );
+              res.send(result); 
+            }
+            );
+        
     //delete a assignment by creator
     app.delete(
       "/api/v1/user/delete-assignment/:assignmentId",
