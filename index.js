@@ -155,6 +155,12 @@ async function run() {
       const result = await submittedAssignmentCollection.insertOne(data);
       res.send(result);
     });
+//clear cookie when loggedOut 
+    app.post("/api/v1/auth/logOut", async (req, res) => {
+      const user = req.body;
+      console.log("logging out", user);
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+    });
 
     //update a single product
     app.put(
