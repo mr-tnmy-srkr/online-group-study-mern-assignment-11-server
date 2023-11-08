@@ -76,20 +76,32 @@ async function run() {
     });
 
     //get particular assignment by id
-    app.get("/api/v1/assignments/:assignmentId", async (req, res) => {
+    app.get("/api/v1/assignments/:assignmentId", gateman, async (req, res) => {
       const id = req.params.assignmentId;
       const query = { _id: new ObjectId(id) };
       const result = await assignmentCollection.findOne(query);
       res.send(result);
     });
     //get all submitted-assignment
-    app.get("/api/v1/submitted-assignments", async (req, res) => {
-      const query = {status:"pending"};
+    app.get("/api/v1/user/submitted-assignments", gateman, async (req, res) => {
+      // const tokenEmail = req.user.email;
+      const query = { status: "pending" };
       const cursor = submittedAssignmentCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
-
+    // get single submitted-assignment
+    app.get(
+      "/api/v1/user/submitted-assignments/:id",
+      gateman,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const cursor = submittedAssignmentCollection.findOne(query);
+        const result = await cursor;
+        res.send(result);
+      }
+    );
     //jwt access token
     app.post("/api/v1/auth/access-token", logger, async (req, res) => {
       // creating token and send to client
