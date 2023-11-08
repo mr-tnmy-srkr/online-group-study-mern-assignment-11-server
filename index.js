@@ -102,6 +102,23 @@ async function run() {
         res.send(result);
       }
     );
+    //get all my-assignment by user email
+    app.get("/api/v1/user/my-assignments", gateman, async (req, res) => {
+      const tokenEmail = req.user.email;
+      const queryEmail = req.query.email;
+      console.log(tokenEmail,queryEmail);
+   if (queryEmail !== tokenEmail) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      let query = {};
+      if (queryEmail) {
+        query.user = queryEmail;
+      }
+      console.log(query);
+      const cursor = submittedAssignmentCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result); 
+    });
     //jwt access token
     app.post("/api/v1/auth/access-token", logger, async (req, res) => {
       // creating token and send to client
