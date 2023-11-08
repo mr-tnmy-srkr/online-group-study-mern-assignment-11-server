@@ -11,6 +11,7 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:5174"],
+    // origin: ["https://online-group-study-mern.web.app", "https://online-group-study-mern.firebaseapp.com"],
     credentials: true,
   })
 );
@@ -70,7 +71,6 @@ async function run() {
 
     //get all assignments
     app.get("/api/v1/assignments", async (req, res) => {
-
       //pagination
       const page = Number(req.query.page);
       const limit = Number(req.query.limit);
@@ -78,9 +78,9 @@ async function run() {
 
       const cursor = assignmentCollection.find().skip(skip).limit(limit);
       const result = await cursor.toArray();
-       // count all data
-       const total = await assignmentCollection.countDocuments();
-       res.send({total, result});
+      // count all data
+      const total = await assignmentCollection.countDocuments();
+      res.send({ total, result });
     });
 
     //get particular assignment by id
@@ -114,8 +114,8 @@ async function run() {
     app.get("/api/v1/user/my-assignments", gateman, async (req, res) => {
       const tokenEmail = req.user.email;
       const queryEmail = req.query.email;
-      console.log(tokenEmail,queryEmail);
-   if (queryEmail !== tokenEmail) {
+      console.log(tokenEmail, queryEmail);
+      if (queryEmail !== tokenEmail) {
         return res.status(403).send({ message: "forbidden access" });
       }
       let query = {};
@@ -125,7 +125,7 @@ async function run() {
       console.log(query);
       const cursor = submittedAssignmentCollection.find(query);
       const result = await cursor.toArray();
-      res.send(result); 
+      res.send(result);
     });
     //jwt access token
     app.post("/api/v1/auth/access-token", logger, async (req, res) => {
@@ -139,16 +139,19 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: true,
-          sameSite: "none",
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
-
-    app.post("/api/v1/auth/user/logout", async (req, res) => {
+    //clear cookie when loggedOut
+    app.post("/api/v1/auth/user/logOut", logger, async (req, res) => {
       const user = req.body;
       console.log("logging out", user);
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      // res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      res
+        .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
+        .send({ success: true });
     });
 
     app.post("/api/v1/user/create-assignment", async (req, res) => {
@@ -162,12 +165,6 @@ async function run() {
       // console.log(data);
       const result = await submittedAssignmentCollection.insertOne(data);
       res.send(result);
-    });
-//clear cookie when loggedOut 
-    app.post("/api/v1/auth/logOut", async (req, res) => {
-      const user = req.body;
-      console.log("logging out", user);
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
     //update a single product
@@ -193,35 +190,35 @@ async function run() {
           filter,
           updateProduct,
           options
-          );
-          res.send(result);
-        }
         );
-        //update data after giving marks
-        app.put(
-          "/api/v1/assignments/marking-assignment/:assignmentId",
-          async (req, res) => {
-            const id = req.params.assignmentId;
-            const data = req.body;
-            console.log("id:", id, "Data:", data);
-            const filter = { _id: new ObjectId(id) };
-            const options = { upsert: true };
-            const updateProduct = {
-              $set: {
-                myMark: data.myMark,
-                feedback: data.feedback,
-                status:"success"
-              },
-            };
-            const result = await submittedAssignmentCollection.updateOne(
-              filter,
-              updateProduct,
-              options
-              );
-              res.send(result); 
-            }
-            );
-        
+        res.send(result);
+      }
+    );
+    //update data after giving marks
+    app.put(
+      "/api/v1/assignments/marking-assignment/:assignmentId",
+      async (req, res) => {
+        const id = req.params.assignmentId;
+        const data = req.body;
+        console.log("id:", id, "Data:", data);
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateProduct = {
+          $set: {
+            myMark: data.myMark,
+            feedback: data.feedback,
+            status: "success",
+          },
+        };
+        const result = await submittedAssignmentCollection.updateOne(
+          filter,
+          updateProduct,
+          options
+        );
+        res.send(result);
+      }
+    );
+
     //delete a assignment by creator
     app.delete(
       "/api/v1/user/delete-assignment/:assignmentId",

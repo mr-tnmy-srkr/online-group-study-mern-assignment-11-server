@@ -14,9 +14,6 @@
   },
   "author": "Tanmoy Sarkar",
   "license": "ISC",
-  "bugs": {
-    "url": "http://localhost:5000"
-  },
   "homepage": "https://online-group-study-mern-assignment-11-server.vercel.app",
   "dependencies": {
     "cookie-parser": "^1.4.6",
