@@ -10,8 +10,8 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    // origin: ["https://online-group-study-mern.web.app", "https://online-group-study-mern.firebaseapp.com"],
+    // origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: ["https://online-group-study-mern.web.app", "https://online-group-study-mern.firebaseapp.com"],
     credentials: true,
   })
 );
@@ -67,7 +67,7 @@ const gateman = (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    client.connect();
+    // client.connect();
 
     //get all assignments
     app.get("/api/v1/assignments", async (req, res) => {
@@ -114,7 +114,7 @@ async function run() {
     app.get("/api/v1/user/my-assignments", gateman, async (req, res) => {
       const tokenEmail = req.user.email;
       const queryEmail = req.query.email;
-      console.log(tokenEmail, queryEmail);
+      // console.log(tokenEmail, queryEmail);
       if (queryEmail !== tokenEmail) {
         return res.status(403).send({ message: "forbidden access" });
       }
@@ -122,7 +122,7 @@ async function run() {
       if (queryEmail) {
         query.user = queryEmail;
       }
-      console.log(query);
+      // console.log(query);
       const cursor = submittedAssignmentCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
@@ -131,7 +131,7 @@ async function run() {
     app.post("/api/v1/auth/access-token", logger, async (req, res) => {
       // creating token and send to client
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: 60 * 60,
       });
@@ -173,7 +173,7 @@ async function run() {
       async (req, res) => {
         const id = req.params.assignmentId;
         const data = req.body;
-        console.log("id:", id, "Data:", data);
+        // console.log("id:", id, "Data:", data);
         const filter = { _id: new ObjectId(id) };
         const options = { upsert: true };
         const updateProduct = {
@@ -200,14 +200,14 @@ async function run() {
       async (req, res) => {
         const id = req.params.assignmentId;
         const data = req.body;
-        console.log("id:", id, "Data:", data);
+        // console.log("id:", id, "Data:", data);
         const filter = { _id: new ObjectId(id) };
         const options = { upsert: true };
         const updateProduct = {
           $set: {
             myMark: data.myMark,
             feedback: data.feedback,
-            status: "success",
+            status: "completed",
           },
         };
         const result = await submittedAssignmentCollection.updateOne(
