@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     // origin: ["http://localhost:5173", "http://localhost:5174"],
-    origin: ["https://online-group-study-mern.web.app", "https://online-group-study-mern.firebaseapp.com"],
+    origin: ["http://localhost:5173", "http://localhost:5174","https://online-group-study-mern.web.app", "https://online-group-study-mern.firebaseapp.com","https://online-group-study-mern.netlify.app","https://online-group-study-mern.vercel.app","https://online-group-study-mern.surge.sh"],
     credentials: true,
   })
 );
@@ -235,7 +235,7 @@ async function run() {
     );
 
     // Send a ping to confirm a successful connection
-    client.db("admin").command({ ping: 1 });
+    // client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
